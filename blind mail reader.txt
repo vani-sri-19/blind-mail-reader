@@ -1,0 +1,229 @@
+
+package emailreader;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+//therla
+import java.util.Properties;
+//therla
+import javax.mail.Flags;
+import javax.mail.Folder;
+import javax.mail.Message;
+import javax.mail.BodyPart;
+import javax.mail.Multipart;
+import javax.mail.MessagingException;
+import javax.mail.NoSuchProviderException;
+import javax.mail.Session;
+import javax.mail.Store;
+import javax.mail.Part;
+import javax.mail.search.FlagTerm;
+import java.util.Locale;
+import javax.speech.Central;
+import javax.speech.synthesis.Synthesizer;
+import javax.speech.synthesis.SynthesizerModeDesc;
+/**
+ *
+ * @author Browser2018
+ */
+public class EmailReader {
+
+    private boolean textIsHtml = false;
+      public static void main(String args[]) {
+        Properties props = System.getProperties();
+        props.setProperty("mail.store.protocol", "imaps");
+        try {
+                Session session = Session.getDefaultInstance(props, null);
+                Store store = session.getStore("imaps");
+
+                // IMAP host for gmail. 
+                // Replace <username> with the valid username of your Email ID.
+                // Replace <password> with a valid password of your Email ID.
+
+                store.connect("imap.gmail.com", "vmuthulakshmi1803@gmail.com", "Muthusana18");
+
+                // IMAP host for yahoo.
+                //store.connect("imap.mail.yahoo.com", "<username>", "<password>");
+
+                System.out.println(store);
+
+                Folder inbox = store.getFolder("Inbox");
+                inbox.open(Folder.READ_ONLY);
+                
+                BufferedReader optionReader = new BufferedReader(new InputStreamReader(System.in));
+                System.out.println("Press (U) to get only unread mails OR Press (A) to get all mails:");
+                try {
+                    char answer = (char) optionReader.read();
+                    if(answer=='A' || answer=='a'){
+                        showAllMails(inbox);
+                    }else if(answer=='U' || answer=='u'){
+                        showUnreadMails(inbox);
+                    }
+                    optionReader.close();
+                } catch (IOException e) {
+                    System.out.println(e);
+                }
+                
+        } catch (NoSuchProviderException e) {
+            System.out.println(e.toString());
+            System.exit(1);
+        } catch (MessagingException e) {
+            System.out.println(e.toString());
+            System.exit(2);
+        }
+
+    }
+    
+    static public void showUnreadMails(Folder inbox){        
+        try {
+            FlagTerm ft = new FlagTerm(new Flags(Flags.Flag.SEEN), false);
+            Message msg[] = inbox.search(ft);
+            Multipart ml;
+            BodyPart bp; 
+            System.out.println("MAILS: "+msg.length);
+            for(Message message:msg) {
+                try {
+                    // set property as Kevin Dictionary
+            System.setProperty("freetts.voices",
+                "com.sun.speech.freetts.en.us.cmu_us_kal.KevinVoiceDirectory"); 
+                 
+            // Register Engine
+            Central.registerEngineCentral
+                ("com.sun.speech.freetts.jsapi.FreeTTSEngineCentral");
+ 
+            // Create a Synthesizer
+            Synthesizer synthesizer =                                         
+                Central.createSynthesizer(new SynthesizerModeDesc(Locale.US));     
+     
+            // Allocate synthesizer
+            synthesizer.allocate();        
+             
+            // Resume Synthesizer
+            synthesizer.resume(); 
+            ml=(Multipart) message.getContent();
+            bp=ml.getBodyPart(1);
+     
+     //       String con=getText(p);
+                    System.out.println("DATE: "+message.getSentDate().toString());
+                    System.out.println("FROM: "+message.getFrom()[0].toString());            
+                    System.out.println("SUBJECT: "+message.getSubject().toString());
+                    System.out.println("CONTENT: "+message.getContent().toString());
+                    System.out.println("******************************************");
+                    String body = message.getDescription();
+                    System.out.println("Hello");
+                    EmailReader e = new EmailReader();
+                    
+                    System.out.println("Hello");
+                    System.out.println(bp+"oiiii");
+                    System.out.println("Hello");
+                    String subject=message.getSubject().toString();
+                    String content=message.getContent().toString();
+                    synthesizer.speakPlainText("subject", null);
+                    synthesizer.speakPlainText(subject, null);
+                    System.out.println("Hello");
+                    synthesizer.speakPlainText("content", null);
+                    synthesizer.speakPlainText(content, null);
+                     System.out.println("Hello");
+                    int flag=1;
+                     System.out.println("Hello");
+                    for(int i=0;i<ml.getCount();i++)
+                        
+                    {// System.out.println(+m1.getcount());
+                        System.out.println("Hello");
+                        System.out.println("aaaaa");
+                        Part p = ml.getBodyPart(i);
+                        String con = e.getText(p);
+                        if(flag==1)
+                        {
+                        System.out.println(con+"jjjjjjjjjjjjjjjj");
+                        synthesizer.speakPlainText(con, null);
+                        flag=0;
+                        }
+                        
+                    }
+                    System.out.println("Hello");
+            synthesizer.waitEngineState(Synthesizer.QUEUE_EMPTY);
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    System.out.println("No Information");
+                }
+            }
+        } catch (MessagingException e) {
+            System.out.println(e.toString());
+        }
+    }
+    
+
+    /**
+     * Return the primary text content of the message.
+     */
+    private String getText(Part p) throws MessagingException, IOException {
+           System.out.println("inside loop");
+        if (p.isMimeType("text/*")) {
+               System.out.println("inside lopp");
+            String s = (String)p.getContent();
+               System.out.println("lopppppp");
+            textIsHtml = p.isMimeType("text/html");
+            System.out.println("jjjjjjjafaofmv");
+               System.out.println(s+"wwwww");
+            return s;
+        }
+
+        if (p.isMimeType("multipart/alternative")) {
+            // prefer html text over plain text
+               System.out.println("No Information");
+            Multipart mp = (Multipart)p.getContent();
+            String text = null;
+            for (int i = 0; i < mp.getCount(); i++) {
+                   System.out.println("No Information");
+                Part bp = mp.getBodyPart(i);
+                if (bp.isMimeType("text/plain")) {
+                       System.out.println("No Information");
+                    if (text == null)
+                        text = getText(bp);
+                    system.out.println("null");
+                         system.out.println("jjjjjjjafaofmv");
+                    continue;
+                } else if (bp.isMimeType("text/html")) {
+                    String s = getText(bp);
+                    system.out.println(s+"text/html");         
+                    if (s != null)
+                        return s;
+                } else {
+                    return getText(bp);
+                }
+            }
+            return text;
+        } else if (p.isMimeType("multipart/*")) {
+            Multipart mp = (Multipart)p.getContent();
+            for (int i = 0; i < mp.getCount(); i++) {
+                String s = getText(mp.getBodyPart(i));
+                if (s != null)
+                    return s;
+            }
+        }
+
+        return null;
+    }
+    static public void showAllMails(Folder inbox){
+        try {
+            Message msg[] = inbox.getMessages();
+            System.out.println("MAILS: "+msg.length);
+            for(Message message:msg) {
+                try {
+                    System.out.println("DATE: "+message.getSentDate().toString());
+                    System.out.println("FROM: "+message.getFrom()[0].toString());            
+                    System.out.println("SUBJECT: "+message.getSubject().toString());
+                    System.out.println("CONTENT: "+message.getContent().toString());
+                    System.out.println("******************************************");
+                } catch (Exception e) {
+                    System.out.println("No Information");
+                }
+            }
+        } catch (MessagingException e) {
+            System.out.println(e.toString());
+        }
+    }
+  
+}
+    
+
